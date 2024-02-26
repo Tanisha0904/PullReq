@@ -1,3 +1,0 @@
-#83335: CloudWatch: Refactor "getDimensionValuesForWildcards", https://github.com/grafana/grafana/pull/83335, None
-#83333: CloudWatch: Remove unused handleGetRegions and regionCache, https://github.com/grafana/grafana/pull/83333, None
-#83332: CloudWatch: Fetch externalId from settings instead of env, https://github.com/grafana/grafana/pull/83332, None
