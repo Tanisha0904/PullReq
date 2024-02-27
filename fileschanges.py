@@ -46,7 +46,7 @@ owner = "grafana"
 repo = "grafana"
 pull_request_number = 83361
 token = GITHUB_TOKEN
-filename="chnagesFromIndividualPR"
+filename="chnagesFromIndividualPR.txt"
 files_changed = fetch_files_changed_in_pull_request(owner, repo, pull_request_number, token)
 if files_changed:
     save_url_content_to_file(files_changed, filename)
