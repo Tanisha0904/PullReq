@@ -1,0 +1,357 @@
+[
+    {
+        "number": 83577,
+        "title": "InfluxDB: Fix interpolation of multi value template variables by adding parenthesis around them",
+        "body": "**What is this feature?**\r\n\r\nHistorically we put parenthesis around multi-value template variables. But during the series of interpolation fixes that was missed. Since it wasn't covered with unit tests we couldn't detect the problem. This PR is addressing this issue.\r\n\r\n**Why do we need this feature?**\r\n\r\nBetter interpolation\r\n\r\n**Who is this feature for?**\r\n\r\nInfluxDB users with template variables which has \"multi-value\" or \"include all\" configuration\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\nFixes https://github.com/grafana/grafana/issues/83538\r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": "",
+        "labels": [
+            "no-backport",
+            "datasource/InfluxDB",
+            "area/frontend",
+            "no-changelog",
+            "type/bug"
+        ]
+    },
+    {
+        "number": 83576,
+        "title": "Accessibility: Improve landmark markup",
+        "body": "<!--\r\n\r\nThank you for sending a pull request! Here are some tips:\r\n\r\n1. If this is your first time, please read our contribution guide at https://github.com/grafana/grafana/blob/main/CONTRIBUTING.md\r\n\r\n2. Ensure you include and run the appropriate tests as part of your Pull Request.\r\n\r\n3. In a new feature or configuration option, an update to the documentation is necessary. Everything related to the documentation is under the docs folder in the root of the repository.\r\n\r\n4. If the Pull Request is a work in progress, make use of GitHub's \"Draft PR\" feature and mark it as such.\r\n\r\n5. If you can not merge your Pull Request due to a merge conflict, Rebase it. This gets it in sync with the main branch.\r\n\r\n6. Name your PR as \"<FeatureArea>: Describe your change\", e.g. Alerting: Prevent race condition. If it's a fix or feature relevant for the changelog describe the user impact in the title. The PR title is used to auto-generate the changelog for issues marked with the \"add to changelog\" label.\r\n\r\n7. If your PR content should be added to the What's New document for the next major or minor release, add the **add to what's new** label to your PR. Note that you should add this label to the main PR that introduces the feature; do not add this label to smaller PRs for the feature.\r\n\r\n-->\r\n\r\n**What is this feature?**\r\n\r\nChanges faulty landmarks and adds some where it is needed.\r\n\r\n**Why do we need this feature?**\r\n\r\nWCAG compliance\r\n\r\n**Who is this feature for?**\r\n\r\nScreen reader users\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\n<!--\r\n\r\n- Automatically closes linked issue when the Pull Request is merged.\r\n\r\nUsage: \"Fixes #<issue number>\", or \"Fixes (paste link of issue)\"\r\n\r\n-->\r\n\r\nFixes #79521\r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": "",
+        "labels": [
+            "area/frontend"
+        ]
+    },
+    {
+        "number": 83568,
+        "title": "Loki: Remove deprecated `instant` and `range` properties from query",
+        "body": "**What is this feature?**\r\n\r\nRemoves the deprecated `instant` and `range` properties from the `LokiQuery` object.\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\nFixes #67367\r\n\r\n# Release notice breaking change\r\n\r\nThe deprecated properties `instant`, and `range` have been removed from Loki's query definition. The recommended way to determine the query type is to use the `queryType` property.\r\n",
+        "changes_made": "",
+        "labels": [
+            "no-backport",
+            "add to changelog",
+            "datasource/Loki",
+            "area/frontend",
+            "area/backend",
+            "breaking change"
+        ]
+    },
+    {
+        "number": 83566,
+        "title": "[wip] Datasources: Introduce new base class",
+        "body": "**What is this feature?**\r\n\r\nThe purpose of this PR is to streamline DX and query execution flow between backend data source plugins and frontend data source plugins. \r\n\r\n**Why do we need this feature?**\r\n\r\nCurrently, the query execution flow for frontend and backend data source plugin differs a bit. Data sources that extend `DataSourceWithBackend` don't need to implement the query method as this is handled in the base class. The plugin just needs to implement `filterQuery` (if filtering is required) and `applyTemplateVariables`, and then these methods will be called from within the `query` method in the base class. Currently, `filterQuery` and `applyTemplateVariables` are defined in the `DataSourceWithBackend` class, although there is noting backend specific about these methods. \r\n\r\nFrontend plugins need to implement the query method, and handle any filtering and variable interpolation as part of that. This is causing a lot of confusion among data source developers. It would be nice if non-backend plugins could simply implement `filterQuery` and `applyTemplateVariables`, and then that would be handled by the framework before the `query` method is called. \r\n\r\n**How?**\r\n\r\nThis PR introduces a new base class that sits between the DataSourceAPI and DataSourceWithBackend / frontend data source plugins. This allows us to provide default implementations for common methods such as `applyTemplateVariables`. `applyTemplateVariables` and `filterQuery` are removed from DataSourceWithBackend and added to the query runner, enabling the same query execution flow for frontend and backend plugins. \r\n\r\n![datasourcebase](https://github.com/grafana/grafana/assets/2388950/6ef328e5-5b01-46e7-ab1a-996bc01911fb)\r\n\r\n\r\nThis change would have no impact on backend data sources. For frontend plugins. things would also work as before. However, from G11 we would encourage them to extend `DataSourceBase` rather than `DataSourceAPI`, and simply implement `applyTemplateVariables` and `filterQuery`. \r\n\r\n\r\n\r\n@ryantxu do you know if this comment below is still valid? If not, we can skip DataSourceBase and just implement defaults in DataSourceAPI? But I don't know - maybe useful to have this base class anyway? Feels like a lot of the props and methods (\u00b4variables\u00b4, \u00b4annotations\u00b4, \u00b4targetContainsTemplate\u00b4) could make use of decent default implementation. \r\nhttps://github.com/grafana/grafana/blob/acf97e43b664cf966f4c85d53580e4a5573e59cc/packages/grafana-data/src/types/datasource.ts#L194-L195\r\n\r\n**Who is this feature for?**\r\n\r\nPlugin developers\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\n<!--\r\n\r\n- Automatically closes linked issue when the Pull Request is merged.\r\n\r\nUsage: \"Fixes #<issue number>\", or \"Fixes (paste link of issue)\"\r\n\r\n-->\r\n\r\nFixes #\r\n\r\n**Special notes for your reviewer:**\r\n\r\nThis is just a draft PR, so I have not yet updated the query runner for alerting, annotations etc. \r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": "",
+        "labels": [
+            "area/frontend",
+            "levitate breaking change"
+        ]
+    },
+    {
+        "number": 83565,
+        "title": "\u0421orrection of spelling errors",
+        "body": "**What is this feature?**\r\n\u0421orrection of spelling errors\r\n\r\n[Add a brief description of what the feature or update does.]\r\n\r\n**Why do we need this feature?**\r\n\r\n[Add a description of the problem the feature is trying to solve.]\r\n\r\n**Who is this feature for?**\r\n\r\n[Add information on what kind of user the feature is for.]\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\n<!--\r\n\r\n- Automatically closes linked issue when the Pull Request is merged.\r\n\r\nUsage: \"Fixes #<issue number>\", or \"Fixes (paste link of issue)\"\r\n\r\n-->\r\n\r\nFixes #\r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [x] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": "",
+        "labels": [
+            "pr/external",
+            "type/docs"
+        ]
+    },
+    {
+        "number": 83560,
+        "title": "datatrails: standardize loading and blocking message indicators",
+        "body": "<!--\r\n\r\nThank you for sending a pull request! Here are some tips:\r\n\r\n1. If this is your first time, please read our contribution guide at https://github.com/grafana/grafana/blob/main/CONTRIBUTING.md\r\n\r\n2. Ensure you include and run the appropriate tests as part of your Pull Request.\r\n\r\n3. In a new feature or configuration option, an update to the documentation is necessary. Everything related to the documentation is under the docs folder in the root of the repository.\r\n\r\n4. If the Pull Request is a work in progress, make use of GitHub's \"Draft PR\" feature and mark it as such.\r\n\r\n5. If you can not merge your Pull Request due to a merge conflict, Rebase it. This gets it in sync with the main branch.\r\n\r\n6. Name your PR as \"<FeatureArea>: Describe your change\", e.g. Alerting: Prevent race condition. If it's a fix or feature relevant for the changelog describe the user impact in the title. The PR title is used to auto-generate the changelog for issues marked with the \"add to changelog\" label.\r\n\r\n7. If your PR content should be added to the What's New document for the next major or minor release, add the **add to what's new** label to your PR. Note that you should add this label to the main PR that introduces the feature; do not add this label to smaller PRs for the feature.\r\n\r\n-->\r\n\r\nStandardizes the Loading indicators and blocking status messages.\r\nBreakdown tab will not show label selector if there was a fetching error.\r\n\r\n---\r\n![image](https://github.com/grafana/grafana/assets/38694490/69366891-0ab3-4f19-bb0c-6b90b5f0854b)\r\n\r\n![image](https://github.com/grafana/grafana/assets/38694490/0daff125-7ba7-4431-baf9-9baad9ede6ba)\r\n\r\n---\r\n![image](https://github.com/grafana/grafana/assets/38694490/999340eb-39ac-4bba-884b-4522a2199b14)\r\n\r\n![image](https://github.com/grafana/grafana/assets/38694490/1f2ba6cc-d7da-464b-babe-a0bd39a4b82d)\r\n---\r\n\r\n![image](https://github.com/grafana/grafana/assets/38694490/9c52baa2-c9a1-4b71-ac06-fd5a3d995540)\r\n\r\n![image](https://github.com/grafana/grafana/assets/38694490/c58506dc-3ca5-4489-8962-e688f822316c)\r\n\r\n(The error handling is still inconsistent, as errors aren't currently bubbling up from the labels variable. For the \"Overview\" and \"Breakdown\" tab, we can't yet determine if the lack of data is due to an error, or due to there not being any labels. This will be addressed in the future)\r\n\r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": "",
+        "labels": [
+            "area/frontend",
+            "no-changelog",
+            "no-backport"
+        ]
+    },
+    {
+        "number": 83559,
+        "title": "Transformations: Docs for Group to nested table",
+        "body": "This PR adds documentation for the new Group to nested table transformation. Currently still in progress as running into some build errors.\r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": "",
+        "labels": [
+            "area/frontend"
+        ]
+    },
+    {
+        "number": 83557,
+        "title": "[WIP] VizTooltips: Rip out the old ones",
+        "body": "just for lolz",
+        "changes_made": "",
+        "labels": [
+            "area/panel/state-timeline",
+            "area/panel/timeseries",
+            "area/panel/barchart",
+            "area/panel/status-history",
+            "levitate breaking change",
+            "area/panel/trend",
+            "area/frontend",
+            "area/panel/heatmap",
+            "area/panel/candlestick"
+        ]
+    },
+    {
+        "number": 83556,
+        "title": "CloudWatch: de-duplicate implementation of AWSDatasourceSettings.Load in LoadCloudWatchSettings",
+        "body": "Fixes #83341\r\n\r\nI am aware that this causes a duplication of a call to json.Unmarshal, and I am wondering if there is a way to fix this. (It might involve submitting a fix to upstream). ",
+        "changes_made": "",
+        "labels": [
+            "pr/external",
+            "area/backend",
+            "datasource/CloudWatch"
+        ]
+    },
+    {
+        "number": 83555,
+        "title": "Alerting: Export rule validation logic and make it portable",
+        "body": "**What is this feature?**\r\n\r\nThis PR:\r\n1. Exports ValidateRuleGroup from the ngalert API package\r\n2. Makes the validation code portable\r\n  a. Not depend on the entire alerting config, just the portion it needs (which will, in the future, be wrapped into a more generic limits object)\r\n  b. Not depend on entire folders, just UID alone - presumably this is an artifact of moving to UID only and dropping folder title from these APIs.\r\n\r\n**Why do we need this feature?**\r\n\r\nSeparate validation code from settings and folder constructs.\r\nBetter knowledge boundaries - not passing lots of unnecessary config around.\r\n\r\n**Who is this feature for?**\r\n\r\nn/a\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\nn/a\r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [x] It works as expected from a user's perspective.\r\n- [x] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [x] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": "",
+        "labels": [
+            "type/refactor",
+            "no-backport",
+            "area/alerting",
+            "area/backend",
+            "no-changelog"
+        ]
+    },
+    {
+        "number": 83551,
+        "title": "Playlist run on Scenes (using only DashboardScene)",
+        "body": "Alternative approach for #82317 \r\n\r\nThis approach uses only DashboardScene, adding the `isPlaying` state to ensure the component re-renders when it changes.\r\n\r\n**Notes**\r\nI had to update the mocks because they were removing the `config.featureToggles` but are never optional. Now, when getting the PlaylistSrv as part of the dashboard scene creation, they break because the feature toggle property is undefined.\r\n\r\ncc/ @torkelo ",
+        "changes_made": "",
+        "labels": [
+            "area/scenes",
+            "no-backport",
+            "type/chore",
+            "area/playlist",
+            "area/frontend",
+            "no-changelog"
+        ]
+    },
+    {
+        "number": 83550,
+        "title": "Snapshots: Change default expiration",
+        "body": "**What is this feature?**\r\nImproving awareness about the Snapshots being public changing CTA text. Change default expiration ensuring snapshots are only available for a fixed period unless the user explicitly decides to change it to `never`.\r\n\r\n* Changed CTA text from `Local Snapshot` to `Publish Snapshot`\r\n* Changed `7 Days` to `1 Week`\r\n* Changed default from `Never` to `1 Week`\r\n\r\nFixes https://github.com/grafana/grafana-enterprise/issues/6209\r\n\r\n**Special notes for your reviewer:**\r\nChanges were made both in the old sharing modal and the new scenes sharing modal.\r\n\r\nScenes  \r\n![Screenshot 2024-02-27 at 18 20 48](https://github.com/grafana/grafana/assets/20256983/bb866550-ac63-4819-b7af-ee0ce181478c)\r\n\r\nOld Dashboards\r\n![Screenshot 2024-02-27 at 18 10 01](https://github.com/grafana/grafana/assets/20256983/b2d5264e-e5ee-4e6a-8e01-e2236d9bc941)\r\n\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": "",
+        "labels": [
+            "area/frontend",
+            "add to changelog",
+            "no-backport"
+        ]
+    },
+    {
+        "number": 83549,
+        "title": "Chore: Update Makefile to support go workspace",
+        "body": "<!--\r\n\r\nThank you for sending a pull request! Here are some tips:\r\n\r\n1. If this is your first time, please read our contribution guide at https://github.com/grafana/grafana/blob/main/CONTRIBUTING.md\r\n\r\n2. Ensure you include and run the appropriate tests as part of your Pull Request.\r\n\r\n3. In a new feature or configuration option, an update to the documentation is necessary. Everything related to the documentation is under the docs folder in the root of the repository.\r\n\r\n4. If the Pull Request is a work in progress, make use of GitHub's \"Draft PR\" feature and mark it as such.\r\n\r\n5. If you can not merge your Pull Request due to a merge conflict, Rebase it. This gets it in sync with the main branch.\r\n\r\n6. Name your PR as \"<FeatureArea>: Describe your change\", e.g. Alerting: Prevent race condition. If it's a fix or feature relevant for the changelog describe the user impact in the title. The PR title is used to auto-generate the changelog for issues marked with the \"add to changelog\" label.\r\n\r\n7. If your PR content should be added to the What's New document for the next major or minor release, add the **add to what's new** label to your PR. Note that you should add this label to the main PR that introduces the feature; do not add this label to smaller PRs for the feature.\r\n\r\n-->\r\n\r\n**What is this feature?**\r\n\r\n[Add a brief description of what the feature or update does.]\r\n\r\n**Why do we need this feature?**\r\n\r\n[Add a description of the problem the feature is trying to solve.]\r\n\r\n**Who is this feature for?**\r\n\r\n[Add information on what kind of user the feature is for.]\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\n<!--\r\n\r\n- Automatically closes linked issue when the Pull Request is merged.\r\n\r\nUsage: \"Fixes #<issue number>\", or \"Fixes (paste link of issue)\"\r\n\r\n-->\r\n\r\nFixes #\r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": "",
+        "labels": [
+            "type/build-packaging",
+            "type/ci"
+        ]
+    },
+    {
+        "number": 83548,
+        "title": "Transformations: Add substring matcher to the 'Filter by Value' transformation",
+        "body": "<!--\r\n\r\nThank you for sending a pull request! Here are some tips:\r\n\r\n1. If this is your first time, please read our contribution guide at https://github.com/grafana/grafana/blob/main/CONTRIBUTING.md\r\n\r\n2. Ensure you include and run the appropriate tests as part of your Pull Request.\r\n\r\n3. In a new feature or configuration option, an update to the documentation is necessary. Everything related to the documentation is under the docs folder in the root of the repository.\r\n\r\n4. If the Pull Request is a work in progress, make use of GitHub's \"Draft PR\" feature and mark it as such.\r\n\r\n5. If you can not merge your Pull Request due to a merge conflict, Rebase it. This gets it in sync with the main branch.\r\n\r\n6. Name your PR as \"<FeatureArea>: Describe your change\", e.g. Alerting: Prevent race condition. If it's a fix or feature relevant for the changelog describe the user impact in the title. The PR title is used to auto-generate the changelog for issues marked with the \"add to changelog\" label.\r\n\r\n7. If your PR content should be added to the What's New document for the next major or minor release, add the **add to what's new** label to your PR. Note that you should add this label to the main PR that introduces the feature; do not add this label to smaller PRs for the feature.\r\n\r\n-->\r\n\r\n**What is this feature?**\r\n\r\nThis feature adds in a new matcher type called \"substring\" and \"not substring\" that does substring matching on field values to filter results. See demo below:\r\n\r\nhttps://github.com/grafana/grafana/assets/3534544/ccfc38f2-abac-44fb-8d13-74743e77547c\r\n\r\n\r\n**Why do we need this feature?**\r\n\r\nBeing able to do partial string matching is a huge value for table data manipulation and combined with template variables being used in transformations, this makes sharable filtering a reality.\r\n\r\n**Who is this feature for?**\r\n\r\nCreators of dashboards that want to transform data\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\n<!--\r\n\r\n- Automatically closes linked issue when the Pull Request is merged.\r\n\r\nUsage: \"Fixes #<issue number>\", or \"Fixes (paste link of issue)\"\r\n\r\n-->\r\n\r\nFixes #\r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [x] It works as expected from a user's perspective.\r\n- [x] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": "",
+        "labels": [
+            "area/transformations",
+            "no-backport",
+            "add to changelog",
+            "add to what's new",
+            "area/frontend"
+        ]
+    },
+    {
+        "number": 83546,
+        "title": "Docs: updated codeowners file",
+        "body": "Under Technical documentation, I removed myself from data sources, and added  myself to admin (IAM)",
+        "changes_made": "",
+        "labels": [
+            "type/build-packaging",
+            "type/docs",
+            "no-changelog"
+        ]
+    },
+    {
+        "number": 83545,
+        "title": "Chore: Remove components from the graveyard folder in grafana/ui",
+        "body": "There are a few deprecated components in grafana/ui that are really internal bits used by the angular graph panel and old versions of the uplot timesers panel.  This PR removes them from the `grafana/ui` bundle in grafana 11\r\n\r\n\r\n# Release notice breaking change\r\n\r\nThe internal/deprecated components for `GraphNG`, and `GraphContextMenu` have been removed.  The recommended approach to include panels in a component is via PanelRenderer",
+        "changes_made": "",
+        "labels": [
+            "area/panel/timeseries",
+            "no-backport",
+            "type/chore",
+            "add to changelog",
+            "datasource/Loki",
+            "levitate breaking change",
+            "area/frontend",
+            "area/backend",
+            "type/docs",
+            "breaking change"
+        ]
+    },
+    {
+        "number": 83540,
+        "title": "[WIP] K8s: Service API package",
+        "body": "<!--\r\n\r\nThank you for sending a pull request! Here are some tips:\r\n\r\n1. If this is your first time, please read our contribution guide at https://github.com/grafana/grafana/blob/main/CONTRIBUTING.md\r\n\r\n2. Ensure you include and run the appropriate tests as part of your Pull Request.\r\n\r\n3. In a new feature or configuration option, an update to the documentation is necessary. Everything related to the documentation is under the docs folder in the root of the repository.\r\n\r\n4. If the Pull Request is a work in progress, make use of GitHub's \"Draft PR\" feature and mark it as such.\r\n\r\n5. If you can not merge your Pull Request due to a merge conflict, Rebase it. This gets it in sync with the main branch.\r\n\r\n6. Name your PR as \"<FeatureArea>: Describe your change\", e.g. Alerting: Prevent race condition. If it's a fix or feature relevant for the changelog describe the user impact in the title. The PR title is used to auto-generate the changelog for issues marked with the \"add to changelog\" label.\r\n\r\n7. If your PR content should be added to the What's New document for the next major or minor release, add the **add to what's new** label to your PR. Note that you should add this label to the main PR that introduces the feature; do not add this label to smaller PRs for the feature.\r\n\r\n-->\r\n\r\n**What is this feature?**\r\n\r\n[Add a brief description of what the feature or update does.]\r\n\r\n**Why do we need this feature?**\r\n\r\n[Add a description of the problem the feature is trying to solve.]\r\n\r\n**Who is this feature for?**\r\n\r\n[Add information on what kind of user the feature is for.]\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\n<!--\r\n\r\n- Automatically closes linked issue when the Pull Request is merged.\r\n\r\nUsage: \"Fixes #<issue number>\", or \"Fixes (paste link of issue)\"\r\n\r\n-->\r\n\r\nFixes #\r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": "",
+        "labels": [
+            "area/backend"
+        ]
+    },
+    {
+        "number": 83536,
+        "title": "Dashboard Scenes: Add model to library panel inspect json",
+        "body": "**What is this feature?**\r\nThis tries to better replicate how library panels look in the inspect tool in the old arch.",
+        "changes_made": "",
+        "labels": [
+            "area/frontend"
+        ]
+    },
+    {
+        "number": 83535,
+        "title": "[PoC 2] Storage: Update dualwriter",
+        "body": "Related to https://github.com/grafana/grafana/pull/81974\r\n",
+        "changes_made": "",
+        "labels": [
+            "area/backend"
+        ]
+    },
+    {
+        "number": 83527,
+        "title": "Folders: Allow listing folders with write permission",
+        "body": "<!--\r\n\r\nThank you for sending a pull request! Here are some tips:\r\n\r\n1. If this is your first time, please read our contribution guide at https://github.com/grafana/grafana/blob/main/CONTRIBUTING.md\r\n\r\n2. Ensure you include and run the appropriate tests as part of your Pull Request.\r\n\r\n3. In a new feature or configuration option, an update to the documentation is necessary. Everything related to the documentation is under the docs folder in the root of the repository.\r\n\r\n4. If the Pull Request is a work in progress, make use of GitHub's \"Draft PR\" feature and mark it as such.\r\n\r\n5. If you can not merge your Pull Request due to a merge conflict, Rebase it. This gets it in sync with the main branch.\r\n\r\n6. Name your PR as \"<FeatureArea>: Describe your change\", e.g. Alerting: Prevent race condition. If it's a fix or feature relevant for the changelog describe the user impact in the title. The PR title is used to auto-generate the changelog for issues marked with the \"add to changelog\" label.\r\n\r\n7. If your PR content should be added to the What's New document for the next major or minor release, add the **add to what's new** label to your PR. Note that you should add this label to the main PR that introduces the feature; do not add this label to smaller PRs for the feature.\r\n\r\n-->\r\n\r\n**What is this feature?**\r\n\r\nModifies `GET /api/folders` so that it accepts a `permission` query parameter (similar to the `/api/search`)\r\nThe only valid values for this parameter are: `Edit` or `View` (default)\r\nIf it's set to `Edit` then returns folders that the user can edit otherwise returns  folders that the user can view \r\n\r\n**Why do we need this feature?**\r\n\r\nThis HTTP API is used by the nested folder picker and in that case we are interested on the folders the user has permission to modify instead of the folders has permission to view.\r\n\r\n**Who is this feature for?**\r\n\r\n[Add information on what kind of user the feature is for.]\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\n<!--\r\n\r\n- Automatically closes linked issue when the Pull Request is merged.\r\n\r\nUsage: \"Fixes #<issue number>\", or \"Fixes (paste link of issue)\"\r\n\r\n-->\r\n\r\nFixes #\r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": "",
+        "labels": [
+            "area/frontend",
+            "area/backend",
+            "add to changelog",
+            "no-backport"
+        ]
+    },
+    {
+        "number": 83525,
+        "title": "[v10.3.x] Dashboards: Fixes issue where panels would not refresh if time range updated while in panel view mode",
+        "body": "Backport a8574226bb9a551efe203252345a8befb166bb56 from #83418\n\n---\n\nFixes an issue where panels would not refresh upon exiting panel view if the time range was updated while viewing the panel.",
+        "changes_made": "",
+        "labels": [
+            "area/dashboard",
+            "add to changelog",
+            "area/frontend",
+            "backport",
+            "type/bug"
+        ]
+    },
+    {
+        "number": 83523,
+        "title": "Update dependency eslint-plugin-import to v2.29.1",
+        "body": "[![Mend Renovate](https://app.renovatebot.com/images/banner.svg)](https://renovatebot.com)\n\nThis PR contains the following updates:\n\n| Package | Change | Age | Adoption | Passing | Confidence |\n|---|---|---|---|---|---|\n| [eslint-plugin-import](https://togithub.com/import-js/eslint-plugin-import) | [`2.27.5` -> `2.29.1`](https://renovatebot.com/diffs/npm/eslint-plugin-import/2.27.5/2.29.1) | [![age](https://developer.mend.io/api/mc/badges/age/npm/eslint-plugin-import/2.29.1?slim=true)](https://docs.renovatebot.com/merge-confidence/) | [![adoption](https://developer.mend.io/api/mc/badges/adoption/npm/eslint-plugin-import/2.29.1?slim=true)](https://docs.renovatebot.com/merge-confidence/) | [![passing](https://developer.mend.io/api/mc/badges/compatibility/npm/eslint-plugin-import/2.27.5/2.29.1?slim=true)](https://docs.renovatebot.com/merge-confidence/) | [![confidence](https://developer.mend.io/api/mc/badges/confidence/npm/eslint-plugin-import/2.27.5/2.29.1?slim=true)](https://docs.renovatebot.com/merge-confidence/) |\n\n---\n\n> [!WARNING]\n> Some dependencies could not be looked up. Check the Dependency Dashboard for more information.\n\n---\n\n### Release Notes\n\n<details>\n<summary>import-js/eslint-plugin-import (eslint-plugin-import)</summary>\n\n### [`v2.29.1`](https://togithub.com/import-js/eslint-plugin-import/blob/HEAD/CHANGELOG.md#2291---2023-12-14)\n\n[Compare Source](https://togithub.com/import-js/eslint-plugin-import/compare/v2.29.0...v2.29.1)\n\n##### Fixed\n\n-   \\[`no-extraneous-dependencies`]: ignore `export type { ... } from '...'` when `includeTypes` is `false` (\\[[#&#8203;2919](https://togithub.com/import-js/eslint-plugin-import/issues/2919)], thanks \\[[@&#8203;Pandemic1617](https://togithub.com/Pandemic1617)])\n-   \\[`no-unused-modules`]: support export patterns with array destructuring (\\[[#&#8203;2930](https://togithub.com/import-js/eslint-plugin-import/issues/2930)], thanks \\[[@&#8203;ljharb](https://togithub.com/ljharb)])\n-   \\[Deps] update `tsconfig-paths` (\\[[#&#8203;2447](https://togithub.com/import-js/eslint-plugin-import/issues/2447)], thanks \\[[@&#8203;domdomegg](https://togithub.com/domdomegg)])\n\n### [`v2.29.0`](https://togithub.com/import-js/eslint-plugin-import/blob/HEAD/CHANGELOG.md#2290---2023-10-22)\n\n[Compare Source](https://togithub.com/import-js/eslint-plugin-import/compare/v2.28.1...v2.29.0)\n\n##### Added\n\n-   TypeScript config: add .cts and .mts extensions (\\[[#&#8203;2851](https://togithub.com/import-js/eslint-plugin-import/issues/2851)], thanks \\[[@&#8203;Zamiell](https://togithub.com/Zamiell)])\n-   \\[`newline-after-import`]: new option `exactCount` and docs update (\\[[#&#8203;1933](https://togithub.com/import-js/eslint-plugin-import/issues/1933)], thanks \\[[@&#8203;anikethsaha](https://togithub.com/anikethsaha)] and \\[[@&#8203;reosarevok](https://togithub.com/reosarevok)])\n-   \\[`newline-after-import`]: fix `exactCount` with `considerComments` false positive, when there is a leading comment (\\[[#&#8203;2884](https://togithub.com/import-js/eslint-plugin-import/issues/2884)], thanks \\[[@&#8203;kinland](https://togithub.com/kinland)])\n\n### [`v2.28.1`](https://togithub.com/import-js/eslint-plugin-import/blob/HEAD/CHANGELOG.md#2281---2023-08-18)\n\n[Compare Source](https://togithub.com/import-js/eslint-plugin-import/compare/v2.28.0...v2.28.1)\n\n##### Fixed\n\n-   \\[`order`]: revert breaking change to single nested group (\\[[#&#8203;2854](https://togithub.com/import-js/eslint-plugin-import/issues/2854)], thanks \\[[@&#8203;yndajas](https://togithub.com/yndajas)])\n\n##### Changed\n\n-   \\[Docs] remove duplicate fixable notices in docs (\\[[#&#8203;2850](https://togithub.com/import-js/eslint-plugin-import/issues/2850)], thanks \\[[@&#8203;bmish](https://togithub.com/bmish)])\n\n### [`v2.28.0`](https://togithub.com/import-js/eslint-plugin-import/blob/HEAD/CHANGELOG.md#2280---2023-07-27)\n\n[Compare Source](https://togithub.com/import-js/eslint-plugin-import/compare/v2.27.5...v2.28.0)\n\n##### Fixed\n\n-   \\[`no-duplicates`]: remove duplicate identifiers in duplicate imports (\\[[#&#8203;2577](https://togithub.com/import-js/eslint-plugin-import/issues/2577)], thanks \\[[@&#8203;joe-matsec](https://togithub.com/joe-matsec)])\n-   \\[`consistent-type-specifier-style`]: fix accidental removal of comma in certain cases (\\[[#&#8203;2754](https://togithub.com/import-js/eslint-plugin-import/issues/2754)], thanks \\[[@&#8203;bradzacher](https://togithub.com/bradzacher)])\n-   \\[Perf] `ExportMap`: Improve `ExportMap.for` performance on larger codebases (\\[[#&#8203;2756](https://togithub.com/import-js/eslint-plugin-import/issues/2756)], thanks \\[[@&#8203;leipert](https://togithub.com/leipert)])\n-   \\[`no-extraneous-dependencies`]/TypeScript: do not error when importing inline type from dev dependencies (\\[[#&#8203;1820](https://togithub.com/import-js/eslint-plugin-import/issues/1820)], thanks \\[[@&#8203;andyogo](https://togithub.com/andyogo)])\n-   \\[`newline-after-import`]/TypeScript: do not error when re-exporting a namespaced import (\\[[#&#8203;2832](https://togithub.com/import-js/eslint-plugin-import/issues/2832)], thanks \\[[@&#8203;laurens-dg](https://togithub.com/laurens-dg)])\n-   \\[`order`]: partial fix for \\[[#&#8203;2687](https://togithub.com/import-js/eslint-plugin-import/issues/2687)] (thanks \\[[@&#8203;ljharb](https://togithub.com/ljharb)])\n-   \\[`no-duplicates`]: Detect across type and regular imports (\\[[#&#8203;2835](https://togithub.com/import-js/eslint-plugin-import/issues/2835)], thanks \\[[@&#8203;benkrejci](https://togithub.com/benkrejci)])\n-   \\[`extensions`]: handle `.` and `..` properly (\\[[#&#8203;2778](https://togithub.com/import-js/eslint-plugin-import/issues/2778)], thanks \\[[@&#8203;benasher44](https://togithub.com/benasher44)])\n-   \\[`no-unused-modules`]: improve schema (thanks \\[[@&#8203;ljharb](https://togithub.com/ljharb)])\n-   \\[`no-unused-modules`]: report error on binding instead of parent export (\\[[#&#8203;2842](https://togithub.com/import-js/eslint-plugin-import/issues/2842)], thanks \\[[@&#8203;Chamion](https://togithub.com/Chamion)])\n\n##### Changed\n\n-   \\[Docs] \\[`no-duplicates`]: fix example schema (\\[[#&#8203;2684](https://togithub.com/import-js/eslint-plugin-import/issues/2684)], thanks \\[[@&#8203;simmo](https://togithub.com/simmo)])\n-   \\[Docs] \\[`group-exports`]: fix syntax highlighting (\\[[#&#8203;2699](https://togithub.com/import-js/eslint-plugin-import/issues/2699)], thanks \\[[@&#8203;devinrhode2](https://togithub.com/devinrhode2)])\n-   \\[Docs] \\[`extensions`]: reference node ESM behavior (\\[[#&#8203;2748](https://togithub.com/import-js/eslint-plugin-import/issues/2748)], thanks \\[[@&#8203;xM8WVqaG](https://togithub.com/xM8WVqaG)])\n-   \\[Refactor] \\[`exports-last`]: use `array.prototype.findlastindex` (thanks \\[[@&#8203;ljharb](https://togithub.com/ljharb)])\n-   \\[Refactor] \\[`no-anonymous-default-export`]: use `object.fromentries` (thanks \\[[@&#8203;ljharb](https://togithub.com/ljharb)])\n-   \\[Refactor] \\[`no-unused-modules`]: use `array.prototype.flatmap` (thanks \\[[@&#8203;ljharb](https://togithub.com/ljharb)])\n\n</details>\n\n---\n\n### Configuration\n\n\ud83d\udcc5 **Schedule**: Branch creation - At any time (no schedule defined), Automerge - At any time (no schedule defined).\n\n\ud83d\udea6 **Automerge**: Disabled by config. Please merge this manually once you are satisfied.\n\n\u267b **Rebasing**: Whenever PR becomes conflicted, or you tick the rebase/retry checkbox.\n\n\ud83d\udd15 **Ignore**: Close this PR and you won't be reminded about this update again.\n\n---\n\n - [ ] <!-- rebase-check -->If you want to rebase/retry this PR, check this box\n\n---\n\nThis PR has been generated by [Mend Renovate](https://www.mend.io/free-developer-tools/renovate/). View repository job log [here](https://developer.mend.io/github/grafana/grafana).\n<!--renovate-debug:eyJjcmVhdGVkSW5WZXIiOiIzNy4yMTIuMCIsInVwZGF0ZWRJblZlciI6IjM3LjIxMi4wIiwidGFyZ2V0QnJhbmNoIjoibWFpbiJ9-->\n",
+        "changes_made": "",
+        "labels": [
+            "area/frontend",
+            "dependencies",
+            "no-changelog"
+        ]
+    },
+    {
+        "number": 83522,
+        "title": "Add lib panel from empty dashboard page",
+        "body": "Adds functionality to the add lib panel CTA in dashboard empty page.\r\n\r\nIt works in the UI but currently breaks the `PanelModelCompatibilityWrapper` due to it only accepting VizPanels. Think this depends on and will be fixed by https://github.com/grafana/grafana/pull/83420\r\n\r\nAlso depends on https://github.com/grafana/grafana/pull/83498",
+        "changes_made": "",
+        "labels": [
+            "area/scenes",
+            "no-backport",
+            "area/dashboard",
+            "area/frontend",
+            "no-changelog"
+        ]
+    },
+    {
+        "number": 83520,
+        "title": "mysql: PoC: allow tls-without-certificates",
+        "body": "proof of concept solution to enable tls-without-certificates for the mysql plugin. this approach has two weaknesses:\r\n\r\n- if a certificate (client or root) is set, we rely on plugin-sdk's `GetTLSConfig`, and if this custom toggle is used, we handle it by ourselves..meaning there are two different codepaths to do something similar.\r\n- the user-interface is not good. we have a bunch of checkboxes and textareas.. this should change into an easier to use user-interface somehow... we can probably keep the current json-data (we probably have to), but change the visual representation to make it more intuitive, perhaps a wizard-style thing?\r\n\r\n\r\n(related to https://github.com/grafana/grafana/issues/63429) ",
+        "changes_made": "",
+        "labels": [
+            "area/frontend",
+            "datasource/MySQL",
+            "area/backend"
+        ]
+    },
+    {
+        "number": 83516,
+        "title": "Scenes: Fix lib panel and lib widget placement in collapsed/uncollapsed rows",
+        "body": "Fixes issue where lib panels and the lib panel widget do not get positioned correctly inside rows.\r\n\r\nFixes https://github.com/grafana/grafana/issues/83503\r\n\r\nDepends on https://github.com/grafana/grafana/pull/83498",
+        "changes_made": "",
+        "labels": [
+            "area/scenes",
+            "no-backport",
+            "area/dashboard",
+            "area/frontend",
+            "no-changelog"
+        ]
+    },
+    {
+        "number": 83514,
+        "title": "Alerting: Support deleting rule groups in the provisioning API",
+        "body": "Adds support for DELETE to the provisioning API's alert rule groups route, which allows deleting the rule group with a single API call. Previously, groups were deleted by deleting rules one-by-one.\r\n\r\nFixes #81860\r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": "",
+        "labels": [
+            "no-backport",
+            "add to changelog",
+            "area/alerting",
+            "area/frontend",
+            "area/backend"
+        ]
+    },
+    {
+        "number": 83513,
+        "title": "E2C: Implement on-prem auth flow",
+        "body": "<!--\r\n\r\nThank you for sending a pull request! Here are some tips:\r\n\r\n1. If this is your first time, please read our contribution guide at https://github.com/grafana/grafana/blob/main/CONTRIBUTING.md\r\n\r\n2. Ensure you include and run the appropriate tests as part of your Pull Request.\r\n\r\n3. In a new feature or configuration option, an update to the documentation is necessary. Everything related to the documentation is under the docs folder in the root of the repository.\r\n\r\n4. If the Pull Request is a work in progress, make use of GitHub's \"Draft PR\" feature and mark it as such.\r\n\r\n5. If you can not merge your Pull Request due to a merge conflict, Rebase it. This gets it in sync with the main branch.\r\n\r\n6. Name your PR as \"<FeatureArea>: Describe your change\", e.g. Alerting: Prevent race condition. If it's a fix or feature relevant for the changelog describe the user impact in the title. The PR title is used to auto-generate the changelog for issues marked with the \"add to changelog\" label.\r\n\r\n7. If your PR content should be added to the What's New document for the next major or minor release, add the **add to what's new** label to your PR. Note that you should add this label to the main PR that introduces the feature; do not add this label to smaller PRs for the feature.\r\n\r\n-->\r\n\r\n**What is this feature?**\r\n\r\n- extends the mock rtk query api with `connectStack`/`disconnectStack` methods\r\n- adds `ConnectModal` with required validation and form inputs\r\n- hooks up `ConnectModal` to appear when clicking the call to action button\r\n- adds disconnect button and disconnect modal\r\n- enhances `Page` to show the disconnect button and stack name if there is a connected stack\r\n- adjusts the text color in `DeleteMigrationTokenModal` to match the design\r\n\r\nhttps://github.com/grafana/grafana/assets/20999846/dfcc17d9-365d-456d-9803-9c4b62dfc894\r\n\r\n**Why do we need this feature?**\r\n\r\n- so users on-prem can connect their stack correctly\r\n\r\n**Who is this feature for?**\r\n\r\n- everyone using E2C\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\n<!--\r\n\r\n- Automatically closes linked issue when the Pull Request is merged.\r\n\r\nUsage: \"Fixes #<issue number>\", or \"Fixes (paste link of issue)\"\r\n\r\n-->\r\n\r\nFixes https://github.com/grafana/grafana/issues/82362\r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": "",
+        "labels": [
+            "area/frontend",
+            "no-changelog",
+            "no-backport"
+        ]
+    },
+    {
+        "number": 83508,
+        "title": "UX: Update trace to logs tooltip to improve clarity",
+        "body": "**What is this feature?**\r\n\r\nUpdates trace to logs tooltip to improve clarity.\r\n\r\n**Why do we need this feature?**\r\n\r\nSmall UX enhancement.\r\n\r\n**Who is this feature for?**\r\n\r\nTracing users.\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\nFixes https://github.com/grafana/grafana/issues/82882\r\n",
+        "changes_made": "",
+        "labels": [
+            "no-backport",
+            "type/chore",
+            "type/ux",
+            "area/ux",
+            "area/frontend",
+            "area/tracing",
+            "no-changelog"
+        ]
+    },
+    {
+        "number": 83499,
+        "title": "SSO: use read locking when SocialBase properties are being read",
+        "body": "<!--\r\n\r\nThank you for sending a pull request! Here are some tips:\r\n\r\n1. If this is your first time, please read our contribution guide at https://github.com/grafana/grafana/blob/main/CONTRIBUTING.md\r\n\r\n2. Ensure you include and run the appropriate tests as part of your Pull Request.\r\n\r\n3. In a new feature or configuration option, an update to the documentation is necessary. Everything related to the documentation is under the docs folder in the root of the repository.\r\n\r\n4. If the Pull Request is a work in progress, make use of GitHub's \"Draft PR\" feature and mark it as such.\r\n\r\n5. If you can not merge your Pull Request due to a merge conflict, Rebase it. This gets it in sync with the main branch.\r\n\r\n6. Name your PR as \"<FeatureArea>: Describe your change\", e.g. Alerting: Prevent race condition. If it's a fix or feature relevant for the changelog describe the user impact in the title. The PR title is used to auto-generate the changelog for issues marked with the \"add to changelog\" label.\r\n\r\n7. If your PR content should be added to the What's New document for the next major or minor release, add the **add to what's new** label to your PR. Note that you should add this label to the main PR that introduces the feature; do not add this label to smaller PRs for the feature.\r\n\r\n-->\r\n\r\n**What is this feature?**\r\n\r\nUse read locking every time we read a SocialBase's property that is being reloaded.\r\n\r\n**Why do we need this feature?**\r\n\r\nTo avoid a potential race condition.\r\n\r\n**Who is this feature for?**\r\n\r\n[Add information on what kind of user the feature is for.]\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\n<!--\r\n\r\n- Automatically closes linked issue when the Pull Request is merged.\r\n\r\nUsage: \"Fixes #<issue number>\", or \"Fixes (paste link of issue)\"\r\n\r\n-->\r\n\r\nFixes #\r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": "",
+        "labels": [
+            "area/backend",
+            "no-changelog"
+        ]
+    },
+    {
+        "number": 83498,
+        "title": "Scenes: Add 'Import from library' functionality",
+        "body": "Migrates the `Import from library` functionality in scenes. Part of https://github.com/grafana/grafana/issues/82316\r\n\r\nDepends on https://github.com/grafana/grafana/pull/83231",
+        "changes_made": "",
+        "labels": [
+            "area/frontend",
+            "no-backport",
+            "no-changelog",
+            "area/dashboard"
+        ]
+    }
+]

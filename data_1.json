@@ -1,0 +1,182 @@
+[
+    {
+        "number": 83476,
+        "title": "[PLEASE IGNORE THIS PR]",
+        "body": "Opening this PR to get a better understanding of what might be going on with an ephemeral instance for another PR.",
+        "changes_made": ""
+    },
+    {
+        "number": 83475,
+        "title": "[PLEASE IGNORE THIS PR]",
+        "body": "Opening this PR to get a better understanding of what might be going on with an ephemeral instance for another PR. ",
+        "changes_made": ""
+    },
+    {
+        "number": 83469,
+        "title": "Chore: Remove the deprecated Vector type",
+        "body": "Since Grafana 10, the vector interface is not necessary and people can simply use an Array.  For Grafana 11, we should remove the vector class so nothing new gets built that depends on the interface.\r\n\r\nThis PR does *not* remove the array prototype hack that lets normal arrays \"implement\" Vector -- this means that plugins trying to use the Vector calls `get(idx)` and `set(idx)` will continue to work.  However we should not keep this hack forever.\r\n\r\nSee https://github.com/grafana/grafana/pull/66187\r\n\r\n\r\n# Release notice breaking change\r\n\r\nThe Vector interface that was deprecated in Grafana 10 has been removed in Grafana 11.  Rather than use an interface, with get/set function, you can simply use an Array.  Plugins compiled against older versions and depend on calling get/set will continue to work because the Array prototype still has a modified prototype.  This will be removed in the future\r\n",
+        "changes_made": ""
+    },
+    {
+        "number": 83467,
+        "title": "Docs: Update \"What's new in G10?\"",
+        "body": "### What changed?\r\n\r\nIn Grafana 10 we introduced support for using react-router v6 in app plugins. This PR adds a link to our [migration guide on the developer portal](https://grafana.com/developers/plugin-tools/migration-guides/update-from-grafana-versions/migrate-9_x-to-10_x#update-to-react-router-v6) in order to make it easier to find.\r\n\r\n\r\n**Screenshot**\r\n---\r\n![Screenshot 2024-02-27 at 06 30 32](https://github.com/grafana/grafana/assets/9974811/6a1ef075-05d6-4fdc-a5ef-730790a8d004)\r\n",
+        "changes_made": ""
+    },
+    {
+        "number": 83466,
+        "title": "Dashboard: Revert descending z-index changes",
+        "body": "this depends on https://github.com/grafana/grafana/pull/83465, and should follow it.\r\n\r\nreverts:\r\n\r\n- https://github.com/grafana/grafana/pull/76675\r\n- https://github.com/grafana/grafana/pull/75597\r\n- https://github.com/grafana/grafana/pull/75382\r\n- https://github.com/grafana/grafana/pull/76379 **(partial)**\r\n- https://github.com/grafana/grafana/pull/75328\r\n\r\nit turned out to be too difficult to revert each PR in isolation due to conflicts. i did the first two successfully, but then employed a different strategy:\r\n\r\nlooking at the [history of _dashboard_grid.scss](https://github.com/grafana/grafana/commits/main/public/sass/components/_dashboard_grid.scss), i restored it to the last commit before all of our z-index changes:\r\n\r\n<img width=\"388\" alt=\"image\" src=\"https://github.com/grafana/grafana/assets/43234/de3f510b-68c6-454c-9b5c-f5749a177c4e\">\r\n\r\nand then applied the only new changeset for reduced-motion:\r\n\r\n<img width=\"485\" alt=\"image\" src=\"https://github.com/grafana/grafana/assets/43234/31ff0c1b-9362-4a45-a2bf-30d0091dedc4\">\r\n\r\n---\r\n\r\nstill to be fixed:\r\n\r\n- it looks like `zIndex.activePanel` has been used in recent work, so we need to figure out what to do in those two cases, and how to update them.\r\n\r\nhttps://github.com/grafana/grafana/blob/2540842c95da9b5fd98f7c42de4834c1d9089f42/public/app/features/trails/DataTrail.tsx#L247\r\n\r\nhttps://github.com/grafana/grafana/blob/2540842c95da9b5fd98f7c42de4834c1d9089f42/public/app/features/dashboard-scene/scene/DashboardControls.tsx#L77\r\n\r\ncc @torkelo ^^",
+        "changes_made": ""
+    },
+    {
+        "number": 83465,
+        "title": "DashboardGrid: Revert LayoutItemContext",
+        "body": "we've switched to using global portals in https://github.com/grafana/grafana/pull/81986, so this is no longer needed.\r\n\r\noriginally introduced in https://github.com/grafana/grafana/pull/80116",
+        "changes_made": ""
+    },
+    {
+        "number": 83464,
+        "title": "CI: Fix lost vendor deps.",
+        "body": "Fix #83362",
+        "changes_made": ""
+    },
+    {
+        "number": 83462,
+        "title": "VizTooltip: Cleanup",
+        "body": "renames some props and types, removes some layers, simplifies the structure. hopefully more uniform and straightforward.\r\n\r\nshould be no functional changes.",
+        "changes_made": ""
+    },
+    {
+        "number": 83460,
+        "title": "Azure: pass list of clouds to frontend",
+        "body": "Pass a custom list of clouds to frontend in case if it was customized for the Grafana instance.",
+        "changes_made": ""
+    },
+    {
+        "number": 83459,
+        "title": "Alerting/Annotations: Prevent panics from composite store jobs from crashing Grafana",
+        "body": "**What is this feature?**\r\n\r\nThis PR fixes a nil dereference panic in the Loki annotation store, and adds a panic handler to the composite store.\r\n\r\n**Why do we need this feature?**\r\n\r\nPanics (like this one) in the jobs launched from the composite store can crash the main Grafana process, so we need to recover from those panics in order to avoid this happening.\r\n\r\n**Who is this feature for?**\r\n\r\nUsers who use a remote Loki instance for alert state history.\r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [x] It works as expected from a user's perspective.\r\n- [x] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [x] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": ""
+    },
+    {
+        "number": 83458,
+        "title": "Dashboard-Scene: Panel renders on refresh",
+        "body": "DRAFT: Decided to put this into draft because although the current solution works it would bring back the problem described here: https://github.com/grafana/grafana/pull/83077#issuecomment-1956693227\r\n\r\nI'm currently looking into `DashboardScene.enrichDataRequest` which is not able to find the vizPanel at all on refresh\r\n\r\nFixes #83375",
+        "changes_made": ""
+    },
+    {
+        "number": 83457,
+        "title": "Update dependency react-virtualized-auto-sizer to v1.0.23",
+        "body": "[![Mend Renovate](https://app.renovatebot.com/images/banner.svg)](https://renovatebot.com)\n\nThis PR contains the following updates:\n\n| Package | Change | Age | Adoption | Passing | Confidence |\n|---|---|---|---|---|---|\n| [react-virtualized-auto-sizer](https://togithub.com/bvaughn/react-virtualized-auto-sizer) | [`1.0.22` -> `1.0.23`](https://renovatebot.com/diffs/npm/react-virtualized-auto-sizer/1.0.22/1.0.23) | [![age](https://developer.mend.io/api/mc/badges/age/npm/react-virtualized-auto-sizer/1.0.23?slim=true)](https://docs.renovatebot.com/merge-confidence/) | [![adoption](https://developer.mend.io/api/mc/badges/adoption/npm/react-virtualized-auto-sizer/1.0.23?slim=true)](https://docs.renovatebot.com/merge-confidence/) | [![passing](https://developer.mend.io/api/mc/badges/compatibility/npm/react-virtualized-auto-sizer/1.0.22/1.0.23?slim=true)](https://docs.renovatebot.com/merge-confidence/) | [![confidence](https://developer.mend.io/api/mc/badges/confidence/npm/react-virtualized-auto-sizer/1.0.22/1.0.23?slim=true)](https://docs.renovatebot.com/merge-confidence/) |\n\n---\n\n> [!WARNING]\n> Some dependencies could not be looked up. Check the Dependency Dashboard for more information.\n\n---\n\n### Release Notes\n\n<details>\n<summary>bvaughn/react-virtualized-auto-sizer (react-virtualized-auto-sizer)</summary>\n\n### [`v1.0.23`](https://togithub.com/bvaughn/react-virtualized-auto-sizer/blob/HEAD/CHANGELOG.md#1023)\n\n[Compare Source](https://togithub.com/bvaughn/react-virtualized-auto-sizer/compare/1.0.22...1.0.23)\n\n-   Bugfix: Use ResizeObserver global from parentNode realm to support case with multiple realms ([#&#8203;82](https://togithub.com/bvaughn/react-virtualized-auto-sizer/issues/82))\n\n</details>\n\n---\n\n### Configuration\n\n\ud83d\udcc5 **Schedule**: Branch creation - At any time (no schedule defined), Automerge - At any time (no schedule defined).\n\n\ud83d\udea6 **Automerge**: Enabled.\n\n\u267b **Rebasing**: Whenever PR becomes conflicted, or you tick the rebase/retry checkbox.\n\n\ud83d\udd15 **Ignore**: Close this PR and you won't be reminded about this update again.\n\n---\n\n - [ ] <!-- rebase-check -->If you want to rebase/retry this PR, check this box\n\n---\n\nThis PR has been generated by [Mend Renovate](https://www.mend.io/free-developer-tools/renovate/). View repository job log [here](https://developer.mend.io/github/grafana/grafana).\n<!--renovate-debug:eyJjcmVhdGVkSW5WZXIiOiIzNy4yMTIuMCIsInVwZGF0ZWRJblZlciI6IjM3LjIxMi4wIiwidGFyZ2V0QnJhbmNoIjoibWFpbiJ9-->\n",
+        "changes_made": ""
+    },
+    {
+        "number": 83456,
+        "title": "Alerting: Stop persisting user-defined templates to disk",
+        "body": "**What is this feature?**\r\n\r\nUpdates Grafana Alertmanager to work with new interface from https://github.com/grafana/alerting/pull/161. This change stops passing user-defined templates to the Grafana Alertmanager by persisting them to disk and instead passes them by string.\r\n\r\n**Why do we need this feature?**\r\n\r\nThis PR is a general improvement and simplification, but there are also some specific reasons why we might want to do this:\r\n\r\n- Incremental step towards abstracting data layer for Grafana's Alertmanager interface away from needing disk-based storage. Next step would likely focus on `FileStore`.\r\n- Reduces likelihood of consistency complexities on save/apply, especially in the context of future Remote AM work.\r\n- Since `DefaultTemplateString` is now treated like other defaults and therefore consistently applied first. User-defined templates can now rely on being able to always override defaults.\r\n\r\n**Who is this feature for?**\r\n\r\nDevelopers mostly, though alert users wanting to consistently override default templates will see improvement here.\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\nFixes #76476\r\n\r\n**Special notes for your reviewer:**\r\n\r\n- https://github.com/grafana/alerting/pull/161 needs to be merged first and the change to go.mod updated with the new ref.\r\n- I chose not to remove `Config.Templates` entirely. We should no longer be using it anywhere in local Grafana AM but it's still possible external AMs could use the filenames somehow. We should make a decision one way or the other eventually, but for now keeping it is the safe bet.\r\n- We used to rely on the disk-persisted templates to decide when a template had changed and update the AM config accordingly. This is no longer possible, so instead we replace the hash of `PostableApiAlertingConfig` with the hash of `PostableUserConfig`, which includes the template contents. This change also necessitates we modify `GetStatus` to expect `PostableUserConfig` as the config.\r\n\r\n",
+        "changes_made": ""
+    },
+    {
+        "number": 83450,
+        "title": "tsRemove sortDimension",
+        "body": "**What is this feature?**\r\n\r\nRemoval of ineffective sorting of a map\r\n\r\n**Why do we need this feature?**\r\n\r\nUnneeded function removal to clean up code\r\n\r\n**Who is this feature for?**\r\n\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\nFixes #83338 \r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": ""
+    },
+    {
+        "number": 83449,
+        "title": "chore: update core plugin descriptions",
+        "body": "<!--\r\n\r\nThank you for sending a pull request! Here are some tips:\r\n\r\n1. If this is your first time, please read our contribution guide at https://github.com/grafana/grafana/blob/main/CONTRIBUTING.md\r\n\r\n2. Ensure you include and run the appropriate tests as part of your Pull Request.\r\n\r\n3. In a new feature or configuration option, an update to the documentation is necessary. Everything related to the documentation is under the docs folder in the root of the repository.\r\n\r\n4. If the Pull Request is a work in progress, make use of GitHub's \"Draft PR\" feature and mark it as such.\r\n\r\n5. If you can not merge your Pull Request due to a merge conflict, Rebase it. This gets it in sync with the main branch.\r\n\r\n6. Name your PR as \"<FeatureArea>: Describe your change\", e.g. Alerting: Prevent race condition. If it's a fix or feature relevant for the changelog describe the user impact in the title. The PR title is used to auto-generate the changelog for issues marked with the \"add to changelog\" label.\r\n\r\n7. If your PR content should be added to the What's New document for the next major or minor release, add the **add to what's new** label to your PR. Note that you should add this label to the main PR that introduces the feature; do not add this label to smaller PRs for the feature.\r\n\r\n-->\r\n\r\n**What is this feature?**\r\n\r\n[Add a brief description of what the feature or update does.]\r\n\r\n**Why do we need this feature?**\r\n\r\n[Add a description of the problem the feature is trying to solve.]\r\n\r\n**Who is this feature for?**\r\n\r\n[Add information on what kind of user the feature is for.]\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\n<!--\r\n\r\n- Automatically closes linked issue when the Pull Request is merged.\r\n\r\nUsage: \"Fixes #<issue number>\", or \"Fixes (paste link of issue)\"\r\n\r\n-->\r\n\r\nFixes #83447 \r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": ""
+    },
+    {
+        "number": 83446,
+        "title": "QueryService: Use QueryDataResponse from SDK",
+        "body": "Depends on https://github.com/grafana/grafana-plugin-sdk-go/pull/909\r\n\r\nThis PR uses the `backend.QueryDataResponse` directly as a k8s object.  The openapi spec is defined in the SDK.\r\n\r\n<img width=\"1073\" alt=\"image\" src=\"https://github.com/grafana/grafana/assets/705951/2e48040c-11d1-49ef-81ba-f55630485387\">\r\n",
+        "changes_made": ""
+    },
+    {
+        "number": 83442,
+        "title": "RBAC: Fix delete team permissions on team delete",
+        "body": "**What is this feature?**\r\n\r\nOn team deletion, we need to delete the associated RBAC assignments, role and permissions.\r\n\r\n**Why do we need this feature?**\r\n\r\n[Add a description of the problem the feature is trying to solve.]\r\n\r\n**Who is this feature for?**\r\n\r\n[Add information on what kind of user the feature is for.]\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\nFixes https://github.com/grafana/grafana/issues/74900\r\n\r\n**Special notes for your reviewer:**\r\n",
+        "changes_made": ""
+    },
+    {
+        "number": 83440,
+        "title": "AzureMonitor: Update docs for current user authentication",
+        "body": "Updates documentation to provide additional detail on current user authentication in Azure Monitor.\r\n\r\nPart of https://github.com/grafana/grafana/pull/81918",
+        "changes_made": ""
+    },
+    {
+        "number": 83439,
+        "title": "Docs: Edit Configure panel options",
+        "body": "Content additions and copy edits\r\nTo be merged into branch from PR https://github.com/grafana/grafana/pull/83438\r\n\r\n**TO DO** (after approval)\r\n- [ ] Remove images from local and upload to admin\r\n- [ ]  Merge into PR https://github.com/grafana/grafana/pull/83438",
+        "changes_made": ""
+    },
+    {
+        "number": 83438,
+        "title": "Docs: restructure Configure panel options",
+        "body": "This PR does the following:\r\n\r\n- Removes **View JSON panel** and **Edit panel** sections\r\n- Reformats **Add title and description** task into a reference section to cover all settings in the **Panel options** part of the UI\r\n- Updates intro bullet list to match content\r\n\r\n**Out of scope**: Content additions or copy edits; those will be done on a new PR branched off this branch; then merged back in.\r\n\r\n**TO DO**\r\n\r\n- [ ]  Get this PR approved\r\n- [ ]  Get PR https://github.com/grafana/grafana/pull/83439 approved (content additions & updates)\r\n- [ ]  Merge PR https://github.com/grafana/grafana/pull/83439 into this branch",
+        "changes_made": ""
+    },
+    {
+        "number": 83437,
+        "title": "Prometheus: Reduce flakiness in prometheus e2e tests",
+        "body": "The config spec for Prometheus e2e tests was getting stuck choosing the data source while navigating to Explore page.\r\n\r\nThis fix reduces flakiness by consolidating tests and forcing the data source choice.\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": ""
+    },
+    {
+        "number": 83434,
+        "title": "Docs: change discussion link to issue link",
+        "body": "We are moving away from using github discussions. Point to an issue instead of a discussion for more information. ",
+        "changes_made": ""
+    },
+    {
+        "number": 83433,
+        "title": "Explore logs: remove exploreScrollableLogsContainer and track scroll to top",
+        "body": "- `exploreScrollableLogsContainer` is no longer used, so we need to remove it, as it was superseded by `logsInfiniteScrolling`.\r\n- Before deciding to keep or remove the `scroll to top` button, it would be ideal to track its interactions and use that data before making any change.\r\n\r\n**Which issue(s) does this PR fix?**:\r\n\r\nCloses https://github.com/grafana/grafana/issues/72148\r\nRelated with https://github.com/grafana/grafana/issues/79196#issuecomment-1959006776",
+        "changes_made": ""
+    },
+    {
+        "number": 83431,
+        "title": "Jaeger: Add tests",
+        "body": "Add a couple of tests. These will be mainly used to prevent regressions when decoupling Jaeger.",
+        "changes_made": ""
+    },
+    {
+        "number": 83426,
+        "title": "Alerting: Query and conditions improvements",
+        "body": "**What is this feature?**\r\n\r\nSeveral smaller improvements to the alert detail view \u2013 query and conditions tab\r\n\r\n1. Prometheus / Loki queries are just visualised as just the expression now \u2013 other first-party data source might follow\r\n2. Aligning the results of expressions to the bottom\r\n3. Data query definition and results are separated just like in the editor view\r\n4. The timerange selector is gone \u2013 use \"view in explorer\" :)\r\n5. Speaking of the explore button, this has been moved to the header of the data query\r\n6. Some tighter gaps in the expressions to align with the design for panel editor\r\n7. Tweaking border color and radius to align with Grafana's design\r\n\r\n**After**\r\n<img width=\"887\" alt=\"image\" src=\"https://github.com/grafana/grafana/assets/868844/d0657459-bece-4263-8fa4-4d8cfce3d9b3\">\r\n\r\n<details><summary>Before</summary>\r\n<p>\r\n\r\n<img width=\"903\" alt=\"image\" src=\"https://github.com/grafana/grafana/assets/868844/33401faa-e779-4757-a815-4002cb613515\">\r\n\r\n</p>\r\n</details> \r\n",
+        "changes_made": ""
+    },
+    {
+        "number": 83424,
+        "title": "E2E: Rewrite mysql tests to playwright",
+        "body": "**Which issue(s) does this PR fix?**:\r\n\r\nFixes #81389\r\n",
+        "changes_made": ""
+    },
+    {
+        "number": 83420,
+        "title": "Dashboard scenes: Change library panel to set dashboard key to panel instead of library panel.",
+        "body": "**What is this feature?**\r\n\r\nChanges library panel so that the library panel has a guid as key and the panel contained gets the dashboard key that is findable in the dashboard.",
+        "changes_made": ""
+    },
+    {
+        "number": 83419,
+        "title": "E2C: Add cloud migration is_target server config option",
+        "body": " - Adds a backend server config flag to control whether the instance is to be the target of a cloud migration\r\n - Typically this value would only ever be enabled in Grafana Cloud and would rely on other cloud-only infra, so it's not added to the sample.ini, nor is further documentation added for it other than code comments.",
+        "changes_made": ""
+    },
+    {
+        "number": 83418,
+        "title": "Dashboards: Fixes issue where panels would not refresh if time range updated while in panel view mode",
+        "body": "Fixes an issue where panels would not refresh upon exiting panel view if the time range was updated while viewing the panel.",
+        "changes_made": ""
+    },
+    {
+        "number": 83411,
+        "title": "datatrails: improve label filter behavior",
+        "body": "<!--\r\n\r\nThank you for sending a pull request! Here are some tips:\r\n\r\n1. If this is your first time, please read our contribution guide at https://github.com/grafana/grafana/blob/main/CONTRIBUTING.md\r\n\r\n2. Ensure you include and run the appropriate tests as part of your Pull Request.\r\n\r\n3. In a new feature or configuration option, an update to the documentation is necessary. Everything related to the documentation is under the docs folder in the root of the repository.\r\n\r\n4. If the Pull Request is a work in progress, make use of GitHub's \"Draft PR\" feature and mark it as such.\r\n\r\n5. If you can not merge your Pull Request due to a merge conflict, Rebase it. This gets it in sync with the main branch.\r\n\r\n6. Name your PR as \"<FeatureArea>: Describe your change\", e.g. Alerting: Prevent race condition. If it's a fix or feature relevant for the changelog describe the user impact in the title. The PR title is used to auto-generate the changelog for issues marked with the \"add to changelog\" label.\r\n\r\n7. If your PR content should be added to the What's New document for the next major or minor release, add the **add to what's new** label to your PR. Note that you should add this label to the main PR that introduces the feature; do not add this label to smaller PRs for the feature.\r\n\r\n-->\r\n\r\n**What is this feature?**\r\n\r\nLargely through an update on the scenes library,\r\n\r\nImproves the behavior of the label filter:\r\n- Includes a label to clarify the meaning of the \"+\" button\r\n  - https://github.com/grafana/scenes/pull/619\r\n- The label selector and value selector now automatically open in a clear workflow\r\n  - https://github.com/grafana/scenes/pull/614\r\n- Also: https://github.com/grafana/scenes/pull/620\r\n\r\n\r\n- Fixes #82484\r\n\r\n![image](https://github.com/grafana/grafana/assets/38694490/d7561d9b-234d-43be-8c20-c2dd603cd438)\r\n\r\n\r\n\r\n**Special notes for your reviewer:**\r\n\r\nPlease check that:\r\n- [ ] It works as expected from a user's perspective.\r\n- [ ] If this is a pre-GA feature, it is behind a feature toggle.\r\n- [ ] The docs are updated, and if this is a [notable improvement](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/#how-to-determine-if-content-belongs-in-a-whats-new-document), it's added to our [What's New](https://grafana.com/docs/writers-toolkit/writing-guide/contribute-release-notes/) doc.\r\n",
+        "changes_made": ""
+    }
+]

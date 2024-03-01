@@ -1,1 +1,1 @@
-GITHUB_TOKEN="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"
+GITHUB_TOKEN = ""
