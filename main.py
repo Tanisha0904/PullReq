@@ -1,6 +1,5 @@
 import json
 import spacy
-import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from collections import defaultdict
 
@@ -21,7 +20,7 @@ print("Tokenizing the documents...")
 for fact in data:
     # doc = nlp(fact["title"] + " " + fact["body"] + fact['changes_made'])
     doc = nlp(fact["title"] + " " + " ".join(fact["labels"]))
-    print(doc, end="---")
+    # print(doc, end="---")
     tokens = [token.text.lower() for token in doc if not token.is_stop and not token.is_punct]
     documents[fact["number"]] = " ".join(tokens)
 
